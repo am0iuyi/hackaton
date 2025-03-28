@@ -14,7 +14,7 @@ def rasst(x1,y1,x2,y2):
         return False
 
 
-
+a
 W = 600
 H = 600
 pygame.init()
