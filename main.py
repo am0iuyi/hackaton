@@ -1,19 +1,14 @@
-
+import random
 
 import pygame
 from pygame import *
 from ai_logic import move
-
-
-
 
 def rasst(x1,y1,x2,y2):
     try:
         return ((x2-x1)**2+(y2-y1)**2)**0.5
     except ValueError:
         return False
-
-
 bg_x=bg_y=0
 W = 600
 H = 600
@@ -24,8 +19,8 @@ x = W // 2
 y = H // 2
 r = 25
 speed=10
-x_enemy=100
-y_enemy=100
+x_enemy=random.randint(0,500)
+y_enemy=random.randint(0,500)
 rect1=Rect((x_enemy, y_enemy, 50, 50))
 clock = pygame.time.Clock()
 running = True
@@ -85,11 +80,6 @@ while running:
 
         if Rect.colliderect(mouse_rect, rect1):
             print('1')
-
-
-
-
-
 
 
     if rasst(x_enemy, y_enemy, x, y)>r:
