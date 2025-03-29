@@ -1,11 +1,11 @@
 enemy_kol=0
 enemy_max=1
 interval=1500
-spawn_count = 1
+spawn_count = 5
 enemy_size = 40
 enemy_speed=5
 enemy_color = (0, 255, 0)
-enemy_hp=100
+enemy_hp=200
 bg_x=bg_y=0
 len_move_fone=150
 W = 960
@@ -14,8 +14,9 @@ FPS = 30
 x = W // 2
 y = H // 2
 r = 25
-speed=15
+speed=30
 BLACK = (0, 0, 0)
 GREEN = (0,25,0)
 RED = (255,0,0)
 value=0
+k=0

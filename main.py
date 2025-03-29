@@ -44,16 +44,23 @@ move_dict = {
 
     'mob_default': [pygame.image.load('animations_mob/attak/orc1_attack_down.png')]*8,
 
-    'mob_attak_down_up': [pygame.image.load('animations_mob/attak/orc1_attack_up.png'),
+    'mob_attak_up': [pygame.image.load('animations_mob/attak/orc1_attack_up.png'),
                   pygame.image.load('animations_mob/attak/orc1_attack_up1.png'),
                   pygame.image.load('animations_mob/attak/orc1_attack_up2.png'),
                   pygame.image.load('animations_mob/attak/orc1_attack_up3.png'),
                   pygame.image.load('animations_mob/attak/orc1_attack_up4.png'),
                   pygame.image.load('animations_mob/attak/orc1_attack_up5.png'),
                   pygame.image.load('animations_mob/attak/orc1_attack_up6.png'),
-                  pygame.image.load('animations_mob/attak/orc1_attack_up7.png')]
+                  pygame.image.load('animations_mob/attak/orc1_attack_up7.png')],
 
-
+    'mob_damage':[pygame.image.load('animations_mob/damage/orc1_hurt_down.png'),
+                  pygame.image.load('animations_mob/damage/orc1_hurt_down1.png'),
+                  pygame.image.load('animations_mob/damage/orc1_hurt_down2.png'),
+                  pygame.image.load('animations_mob/damage/orc1_hurt_down3.png'),
+                  pygame.image.load('animations_mob/damage/orc1_hurt_down4.png'),
+                  pygame.image.load('animations_mob/damage/orc1_hurt_down5.png'),
+                  pygame.image.load('animations_mob/damage/orc1_hurt_down6.png'),
+                  pygame.image.load('animations_mob/damage/orc1_hurt_down7.png')]
 }
 
 enemies = []
@@ -77,7 +84,7 @@ def spawn_enemies(count=1):
             'color': enemy_color,
             'speed': enemy_speed,
             'hp': enemy_hp,
-            'damage': None
+
         }
     ]
 
@@ -89,7 +96,7 @@ clock = pygame.time.Clock()
 running = True
 background_image = pygame.image.load("background.png").convert()
 background_rect = background_image.get_rect()
-
+damage=False
 kolvo_bullet = []
 while running:
     screen.fill(BLACK)
@@ -135,9 +142,14 @@ while running:
                     dmg = random.randint(15, 25)
                     if enemy['hp'] - dmg > 1:
                         enemy['hp'] -= dmg
-                        enemy['damage'] = dmg
+                        damage=True
+
                     else:
                         enemies.remove(enemy)
+    elif event.type == pygame.MOUSEBUTTONUP:
+        damage=False
+
+
 
     if current_time - last_time > interval:
         while enemy_kol != enemy_max:
@@ -147,15 +159,20 @@ while running:
                 last_time = current_time
                 enemy_kol += 1
 
-    for i, enemy in enumerate(enemies):
-        if rasst(enemy['x']//2, enemy['y']//2, x//2, y//2) > 48:
-            enemy['x'], enemy['y'] = move(enemy['x'], enemy['y'], x, y, 5)
-            mob_state = 'mob_default'
+    for enemy in enemies:
+        if damage:
+            mob_state = 'mob_damage'
         else:
-            if enemy['y']<y and enemy['x']<x:
-                mob_state='mob_attak_down'
+            if rasst(enemy['x']//2, enemy['y']//2, x//2, y//2) > 48:
+                enemy['x'], enemy['y'] = move(enemy['x'], enemy['y'], x, y, 25)
+                mob_state = 'mob_default'
             else:
-                mob_state = 'mob_attak_down_up'
+                if enemy['y']+128<y+96:
+                    mob_state='mob_attak_down'
+                else:
+                    mob_state = 'mob_attak_up'
+
+
         # for j, other_enemy in enumerate(enemies):
         #     if Rect.colliderect(Rect(temp_x,temp_y,enemy['height'],enemy['width']),
         #                           Rect(enemy['x'],enemy['y'],enemy['height'],enemy['width'])):
@@ -175,8 +192,8 @@ while running:
         x = W - 64
     if y  <= 0:
         y = 0
-    elif y + 64 >= H:
-        y = H - 64
+    elif y + 96 >= H:
+        y = H - 96
 
 
     if player_move:
@@ -192,7 +209,7 @@ while running:
     image = move_dict[player_state][pygame.time.get_ticks() % 8]
     image = pygame.transform.scale(image, (64, 96))
 
-    image_mob_attak = move_dict[mob_state][pygame.time.get_ticks() % 8]
+    image_mob_attak = move_dict[mob_state][pygame.time.get_ticks() % 32//4]
     image_mob_attak = pygame.transform.scale(image_mob_attak, (128, 128))
     screen.blit(background_image, (bg_x, bg_y))
 
@@ -204,13 +221,12 @@ while running:
         #     enemy['color'],
         #     (enemy['x'], enemy['y'], enemy['width'], enemy['height'])
         # )
-        text = font.render(f'{enemy['hp']}/100hp', True, RED)
+        text = font.render(f'{enemy['hp']}/{enemy_hp}hp', True, RED)
         textRect = text.get_rect()
         textRect.center = (enemy['x'] +82, enemy['y']-30)
         screen.blit(text, textRect)
 
     screen.blit(image, (x, y))
-
-
     pygame.display.update()
+
     clock.tick(FPS)
