@@ -5,7 +5,8 @@ from pygame import *
 
 pygame.init()
 from ai_logic import move
-
+TIMER_ONE = USEREVENT + 1
+TIMER_TWO = USEREVENT + 2
 player_state = 'default'
 mob_state = 'mob_default'
 move_dict = {
@@ -60,7 +61,16 @@ move_dict = {
                   pygame.image.load('animations_mob/damage/orc1_hurt_down4.png'),
                   pygame.image.load('animations_mob/damage/orc1_hurt_down5.png'),
                   pygame.image.load('animations_mob/damage/orc1_hurt_down6.png'),
-                  pygame.image.load('animations_mob/damage/orc1_hurt_down7.png')]
+                  pygame.image.load('animations_mob/damage/orc1_hurt_down7.png')],
+
+    'mob_death': [pygame.image.load('animations_mob/death/orc1_death_down.png'),
+                  pygame.image.load('animations_mob/death/orc1_death_down1.png'),
+                  pygame.image.load('animations_mob/death/orc1_death_down2.png'),
+                  pygame.image.load('animations_mob/death/orc1_death_down3.png'),
+                  pygame.image.load('animations_mob/death/orc1_death_down4.png'),
+                  pygame.image.load('animations_mob/death/orc1_death_down5.png'),
+                  pygame.image.load('animations_mob/death/orc1_death_down6.png'),
+                  pygame.image.load('animations_mob/death/orc1_death_down7.png'),]
 }
 
 enemies = []
@@ -84,7 +94,7 @@ def spawn_enemies(count=1):
             'color': enemy_color,
             'speed': enemy_speed,
             'hp': enemy_hp,
-
+            'state': 'mob_default'
         }
     ]
 
@@ -93,10 +103,11 @@ font = pygame.font.Font('alagard-12px-unicode.ttf', 20)
 
 screen = pygame.display.set_mode((W, H))
 clock = pygame.time.Clock()
-running = True
+
 background_image = pygame.image.load("background.png").convert()
 background_rect = background_image.get_rect()
-damage=False
+
+
 kolvo_bullet = []
 while running:
     screen.fill(BLACK)
@@ -145,7 +156,10 @@ while running:
                         damage=True
 
                     else:
-                        enemies.remove(enemy)
+                        damage=False
+                        death=True
+                        time.set_timer(TIMER_ONE,300)
+                        # enemies.remove(enemy)
     elif event.type == pygame.MOUSEBUTTONUP:
         damage=False
 
@@ -161,16 +175,34 @@ while running:
 
     for enemy in enemies:
         if damage:
-            mob_state = 'mob_damage'
+            enemy['state'] = 'mob_damage'
+        elif death:
+            enemy['state'] = 'mob_death'
+            if event.type== TIMER_ONE:
+                enemies.remove(enemy)
+                death=False
+        elif rasst(enemy['x'] // 2, enemy['y'] // 2, x // 2, y // 2) > 48:
+            enemy['x'], enemy['y'] = move(
+                enemy['x'],
+                enemy['y'],
+                x,
+                y,
+                enemy['speed'],
+                [e for e in enemies if e is not enemy]
+            )
+            enemy['state'] = 'mob_default'
         else:
-            if rasst(enemy['x']//2, enemy['y']//2, x//2, y//2) > 48:
-                enemy['x'], enemy['y'] = move(enemy['x'], enemy['y'], x, y, 25)
-                mob_state = 'mob_default'
+            if enemy['y']+128<y+96:
+                enemy['state']='mob_attak_down'
+                if k%8==0:
+                    player_hp-=10
             else:
-                if enemy['y']+128<y+96:
-                    mob_state='mob_attak_down'
-                else:
-                    mob_state = 'mob_attak_up'
+                enemy['state'] = 'mob_attak_up'
+                if k % 8 == 0:
+                    player_hp -= 10
+
+
+
 
 
         # for j, other_enemy in enumerate(enemies):
@@ -207,15 +239,17 @@ while running:
             bg_y = max(bg_y - speed, -(background_rect.height - H))
 
     image = move_dict[player_state][pygame.time.get_ticks() % 8]
+    k+=1
     image = pygame.transform.scale(image, (64, 96))
-
-    image_mob_attak = move_dict[mob_state][pygame.time.get_ticks() % 32//4]
-    image_mob_attak = pygame.transform.scale(image_mob_attak, (128, 128))
     screen.blit(background_image, (bg_x, bg_y))
-
-
     for enemy in enemies:
+        image_mob_attak = move_dict[enemy['state']][pygame.time.get_ticks() % 32//4]
+        image_mob_attak = pygame.transform.scale(image_mob_attak, (128, 128))
+
         screen.blit(image_mob_attak, (enemy['x'], enemy['y']))
+
+    # for enemy in enemies:
+    #     screen.blit(image_mob_attak, (enemy['x'], enemy['y']))
         # pygame.draw.rect(
         #     screen,
         #     enemy['color'],
@@ -225,7 +259,10 @@ while running:
         textRect = text.get_rect()
         textRect.center = (enemy['x'] +82, enemy['y']-30)
         screen.blit(text, textRect)
-
+    text_player_hp = font.render(f'{player_hp}/500hp',True,YELLOW)
+    text_player_hp_rect=text_player_hp.get_rect()
+    text_player_hp_rect.center =(x+32,y-30)
+    screen.blit(text_player_hp,text_player_hp_rect)
     screen.blit(image, (x, y))
     pygame.display.update()
 
