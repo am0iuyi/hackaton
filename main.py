@@ -157,7 +157,7 @@ font = pygame.font.Font('alagard-12px-unicode.ttf', 20)
 screen = pygame.display.set_mode((W, H))
 clock = pygame.time.Clock()
 
-background_image = pygame.image.load("background.png").convert()
+background_image = pygame.image.load("1c6d07c2225068915f8d8ad8131f4198 (1).jpg").convert()
 background_rect = background_image.get_rect()
 
 heart=pygame.image.load('HB/heart.png')
