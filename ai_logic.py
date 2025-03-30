@@ -36,15 +36,15 @@ def move(ai_x: int, ai_y: int, score_x: int, score_y: int, move_speed: int = 0.2
     min_lenght = min(left, right, up, down)
 
     if math.inf == min_lenght:
-        return ai_x, ai_y
+        return ai_x, ai_y,'mob_default',False
     elif right == min_lenght:
-        return ai_x + move_speed, ai_y
+        return ai_x + move_speed, ai_y,'mob_r',True
     elif up == min_lenght:
-        return ai_x, ai_y - move_speed
+        return ai_x, ai_y - move_speed,'mob_up',True
     elif down == min_lenght:
-        return ai_x, ai_y + move_speed
+        return ai_x, ai_y + move_speed,'mob_down',True
     elif left == min_lenght:
-        return ai_x - move_speed, ai_y
+        return ai_x - move_speed, ai_y,'mob_l',True
 
 
 

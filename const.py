@@ -1,7 +1,7 @@
 enemy_kol=0
-enemy_max=5
+enemy_max=1
 interval=1500
-spawn_count = 5
+spawn_count = 0#DELETE
 enemy_size = 40
 enemy_speed=5
 enemy_color = (0, 255, 0)
@@ -25,3 +25,5 @@ player_hp=500
 damage=False
 running = True
 death=False
+enemy_move=False
+kill_count=0

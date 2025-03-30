@@ -9,6 +9,8 @@ TIMER_ONE = USEREVENT + 1
 TIMER_TWO = USEREVENT + 2
 player_state = 'default'
 mob_state = 'mob_default'
+
+
 move_dict = {
     'right': [pygame.image.load('animations_girl/right/right_1.png'),
               pygame.image.load('animations_girl/right/right_2.png'),
@@ -70,7 +72,55 @@ move_dict = {
                   pygame.image.load('animations_mob/death/orc1_death_down4.png'),
                   pygame.image.load('animations_mob/death/orc1_death_down5.png'),
                   pygame.image.load('animations_mob/death/orc1_death_down6.png'),
-                  pygame.image.load('animations_mob/death/orc1_death_down7.png'),]
+                  pygame.image.load('animations_mob/death/orc1_death_down7.png')],
+
+    'girl_damage': [pygame.image.load('animations_girl/damage/down_1_red.gif')]*8,
+
+    # [pygame.image.load('animations_girl/damage/down_1.png'),
+    #                 pygame.image.load('animations_girl/damage/down_1_red.gif'),
+    #                 pygame.image.load('animations_girl/damage/down_2.png'),
+    #                 pygame.image.load('animations_girl/damage/down_2_red.gif'),
+    #                 pygame.image.load('animations_girl/damage/down_3.png'),
+    #                 pygame.image.load('animations_girl/damage/down_3_red.gif'),
+    #                 pygame.image.load('animations_girl/damage/down_4.png'),
+    #                 pygame.image.load('animations_girl/damage/down_4_red.gif'),]
+
+    'mob_l': [pygame.image.load('animations_mob/l/orc1_run_left.png'),
+              pygame.image.load('animations_mob/l/orc1_run_left1.png'),
+              pygame.image.load('animations_mob/l/orc1_run_left2.png'),
+              pygame.image.load('animations_mob/l/orc1_run_left3.png'),
+              pygame.image.load('animations_mob/l/orc1_run_left4.png'),
+              pygame.image.load('animations_mob/l/orc1_run_left5.png'),
+              pygame.image.load('animations_mob/l/orc1_run_left6.png'),
+              pygame.image.load('animations_mob/l/orc1_run_left7.png')],
+
+    'mob_r': [pygame.image.load('animations_mob/r/orc1_run_right.png'),
+              pygame.image.load('animations_mob/r/orc1_run_right1.png'),
+              pygame.image.load('animations_mob/r/orc1_run_right2.png'),
+              pygame.image.load('animations_mob/r/orc1_run_right3.png'),
+              pygame.image.load('animations_mob/r/orc1_run_right4.png'),
+              pygame.image.load('animations_mob/r/orc1_run_right5.png'),
+              pygame.image.load('animations_mob/r/orc1_run_right6.png'),
+              pygame.image.load('animations_mob/r/orc1_run_right7.png')],
+
+    'mob_up': [pygame.image.load('animations_mob/up/orc1_run_up.png'),
+              pygame.image.load('animations_mob/up/orc1_run_up1.png'),
+              pygame.image.load('animations_mob/up/orc1_run_up2.png'),
+              pygame.image.load('animations_mob/up/orc1_run_up3.png'),
+              pygame.image.load('animations_mob/up/orc1_run_up4.png'),
+              pygame.image.load('animations_mob/up/orc1_run_up5.png'),
+              pygame.image.load('animations_mob/up/orc1_run_up6.png'),
+              pygame.image.load('animations_mob/up/orc1_run_up7.png')],
+
+    'mob_down': [pygame.image.load('animations_mob/down/orc1_run_down.png'),
+              pygame.image.load('animations_mob/down/orc1_run_down1.png'),
+              pygame.image.load('animations_mob/down/orc1_run_down2.png'),
+              pygame.image.load('animations_mob/down/orc1_run_down3.png'),
+              pygame.image.load('animations_mob/down/orc1_run_down4.png'),
+              pygame.image.load('animations_mob/down/orc1_run_down5.png'),
+              pygame.image.load('animations_mob/down/orc1_run_down6.png'),
+              pygame.image.load('animations_mob/down/orc1_run_down7.png')],
+
 }
 
 enemies = []
@@ -94,7 +144,10 @@ def spawn_enemies(count=1):
             'color': enemy_color,
             'speed': enemy_speed,
             'hp': enemy_hp,
-            'state': 'mob_default'
+            'state': 'mob_default',
+            'damage': False,
+            'death': False,
+            'move':False
         }
     ]
 
@@ -107,6 +160,12 @@ clock = pygame.time.Clock()
 background_image = pygame.image.load("background.png").convert()
 background_rect = background_image.get_rect()
 
+heart=pygame.image.load('HB/heart.png')
+heart=transform.scale(heart,(32,32))
+
+
+
+exp=pygame.image.load('HB/experience.png')
 
 kolvo_bullet = []
 while running:
@@ -153,15 +212,15 @@ while running:
                     dmg = random.randint(15, 25)
                     if enemy['hp'] - dmg > 1:
                         enemy['hp'] -= dmg
-                        damage=True
-
+                        enemy['damage']=True
                     else:
-                        damage=False
-                        death=True
+                        enemy['damage']=False
+                        enemy['death']=True
                         time.set_timer(TIMER_ONE,300)
                         # enemies.remove(enemy)
     elif event.type == pygame.MOUSEBUTTONUP:
-        damage=False
+        for enemy in enemies:
+            enemy['damage']=False
 
 
 
@@ -174,15 +233,16 @@ while running:
                 enemy_kol += 1
 
     for enemy in enemies:
-        if damage:
+        if enemy['damage']:
             enemy['state'] = 'mob_damage'
-        elif death:
+        elif enemy['death']:
             enemy['state'] = 'mob_death'
             if event.type== TIMER_ONE:
                 enemies.remove(enemy)
-                death=False
+                kill_count+=1
+                enemy['death']=False
         elif rasst(enemy['x'] // 2, enemy['y'] // 2, x // 2, y // 2) > 48:
-            enemy['x'], enemy['y'] = move(
+            enemy['x'], enemy['y'],enemy['state'],enemy['move'] = move(
                 enemy['x'],
                 enemy['y'],
                 x,
@@ -190,15 +250,17 @@ while running:
                 enemy['speed'],
                 [e for e in enemies if e is not enemy]
             )
-            enemy['state'] = 'mob_default'
+            # enemy['state'] = 'mob_default'
         else:
             if enemy['y']+128<y+96:
                 enemy['state']='mob_attak_down'
-                if k%8==0:
+                if k%10==0:
+                    player_state='girl_damage'
                     player_hp-=10
             else:
                 enemy['state'] = 'mob_attak_up'
-                if k % 8 == 0:
+                if k % 10 == 0:
+                    player_state = 'girl_damage'
                     player_hp -= 10
 
 
@@ -238,15 +300,25 @@ while running:
         elif y > H - len_move_fone:  #
             bg_y = max(bg_y - speed, -(background_rect.height - H))
 
+
+    if kill_count*10 == enemy_max*10:
+        print('kards')
+
+    if player_hp<=0:
+        print('you lose')
     image = move_dict[player_state][pygame.time.get_ticks() % 8]
     k+=1
     image = pygame.transform.scale(image, (64, 96))
     screen.blit(background_image, (bg_x, bg_y))
-    for enemy in enemies:
-        image_mob_attak = move_dict[enemy['state']][pygame.time.get_ticks() % 32//4]
-        image_mob_attak = pygame.transform.scale(image_mob_attak, (128, 128))
+    screen.blit(heart,(10,10))
+    screen.blit(exp,(170,10))
 
-        screen.blit(image_mob_attak, (enemy['x'], enemy['y']))
+    for enemy in enemies:
+        if enemy['move']:
+            image_mob_attak = move_dict[enemy['state']][pygame.time.get_ticks() % 32//4]
+            image_mob_attak = pygame.transform.scale(image_mob_attak, (128, 128))
+
+            screen.blit(image_mob_attak, (enemy['x'], enemy['y']))
 
     # for enemy in enemies:
     #     screen.blit(image_mob_attak, (enemy['x'], enemy['y']))
@@ -260,10 +332,14 @@ while running:
         textRect.center = (enemy['x'] +82, enemy['y']-30)
         screen.blit(text, textRect)
     text_player_hp = font.render(f'{player_hp}/500hp',True,YELLOW)
-    text_player_hp_rect=text_player_hp.get_rect()
-    text_player_hp_rect.center =(x+32,y-30)
-    screen.blit(text_player_hp,text_player_hp_rect)
+    text_exp = font.render(f'{kill_count*10}/{enemy_max*10} exp',True,YELLOW)
+    screen.blit(text_player_hp,(52,10))
+    screen.blit(text_exp,(212,10))
     screen.blit(image, (x, y))
+
+
+
+
     pygame.display.update()
 
     clock.tick(FPS)
